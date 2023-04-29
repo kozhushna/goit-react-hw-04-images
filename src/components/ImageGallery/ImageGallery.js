@@ -1,49 +1,57 @@
 import PropTypes from 'prop-types';
-import { Component } from 'react';
+import { useReducer } from 'react';
 import { ImageGalleryItem } from 'components/ImageGalleryItem';
 import Modal from 'components/Modal';
 
 import css from './ImageGallery.module.css';
 
-class ImageGallery extends Component {
-  state = {
+function reducer(state, action) {
+  return {
+    showModal: action.type === 'showModal',
+    src: action.src ?? '',
+    alt: action.alt ?? '',
+  };
+}
+
+export default function ImageGallery({ images }) {
+  const [state, dispatch] = useReducer(reducer, {
     showModal: false,
     src: '',
     alt: '',
+  });
+
+  const showModalPopup = (src, alt) => {
+    dispatch({ type: 'showModal', src: src, alt: alt });
   };
 
-  showModal = (src, alt) => {
-    this.setState({ src, alt, showModal: true });
-  };
-
-  closeModal = () => {
-    this.setState({ showModal: false });
-  };
-
-  render() {
-    const { showModal, src, alt } = this.state;
-    return (
-      <>
-        <ul className={css.gallery}>
-          {this.props.images.map(image => {
-            return (
-              <ImageGalleryItem
-                key={image.id}
-                webformatURL={image.webformatURL}
-                largeImageURL={image.largeImageURL}
-                tags={image.tags}
-                onImageClick={this.showModal}
-              />
-            );
-          })}
-        </ul>
-        {showModal && <Modal src={src} alt={alt} onClose={this.closeModal} />}
-      </>
-    );
-  }
+  const { src, alt, showModal } = state;
+  return (
+    <>
+      <ul className={css.gallery}>
+        {images.map(image => {
+          return (
+            <ImageGalleryItem
+              key={image.id}
+              webformatURL={image.webformatURL}
+              largeImageURL={image.largeImageURL}
+              tags={image.tags}
+              onImageClick={showModalPopup}
+            />
+          );
+        })}
+      </ul>
+      {showModal && (
+        <Modal
+          src={src}
+          alt={alt}
+          onClose={() => {
+            dispatch({ type: 'hideModal' });
+          }}
+        />
+      )}
+    </>
+  );
 }
-
-export default ImageGallery;
 
 ImageGallery.propTypes = {
   images: PropTypes.arrayOf(
