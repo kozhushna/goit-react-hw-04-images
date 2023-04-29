@@ -21,10 +21,10 @@ export default function App() {
     if (!searchQuery) {
       return;
     }
-    handleFindImages(searchQuery, page);
+    handleFindImages();
   }, [searchQuery, page]);
 
-  async function handleFindImages(searchQuery, page) {
+  async function handleFindImages() {
     setIsLoading(true);
     try {
       const data = await getImages(searchQuery, page, PAGE_SIZE);
