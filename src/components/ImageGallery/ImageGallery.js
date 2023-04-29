@@ -19,7 +19,7 @@ export default function ImageGallery({ images }) {
     src: '',
     alt: '',
   });
-  console.log(123);
+
   const showModalPopup = (src, alt) => {
     dispatch({ type: 'showModal', src: src, alt: alt });
   };

@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useState, useEffect } from 'react';
 import Searchbar from 'components/Searchbar';
 import ImageGallery from 'components/ImageGallery';
 import Button from 'components/Button';
@@ -10,67 +10,59 @@ import css from './App.module.css';
 
 const PAGE_SIZE = 12;
 
-class App extends Component {
-  state = {
-    searchQuery: '',
-    page: 1,
-    images: [],
-    showLoadMoreBtn: false,
-    isLoading: false,
-  };
+export default function App() {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [showLoadMoreBtn, setShowLoadMoreBtn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  async componentDidUpdate(prevProps, prevState) {
-    const { searchQuery, page } = this.state;
-    if (prevState.searchQuery !== searchQuery || prevState.page !== page) {
-      try {
-        this.setState({ isLoading: true });
-        const data = await getImages(searchQuery, page, PAGE_SIZE);
+  useEffect(() => {
+    if (!searchQuery) {
+      return;
+    }
+    handleFindImages(searchQuery, page);
+  }, [searchQuery, page]);
 
-        if (!data.images.length) {
-          toast.info(
-            'Sorry, there are no images matching your search query. Please try again.'
-          );
-          return;
-        }
+  async function handleFindImages(searchQuery, page) {
+    setIsLoading(true);
+    try {
+      const data = await getImages(searchQuery, page, PAGE_SIZE);
 
-        this.setState(prevState => ({
-          images: [...prevState.images, ...data.images],
-          showLoadMoreBtn: page < Math.ceil(data.total / PAGE_SIZE),
-        }));
-      } catch (error) {
-        toast.error(error.message);
-      } finally {
-        this.setState({ isLoading: false });
+      if (!data.images.length) {
+        toast.info(
+          'Sorry, there are no images matching your search query. Please try again.'
+        );
+        return;
       }
+      setImages(prevImages => [...prevImages, ...data.images]);
+
+      setShowLoadMoreBtn(page < Math.ceil(data.total / PAGE_SIZE));
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
   }
 
-  loadMore = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const loadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
-  onSubmitForm = searchQuery => {
-    this.setState({
-      searchQuery,
-      images: [],
-      page: 1,
-      isEmpty: false,
-      showLoadMoreBtn: false,
-    });
+  const onSubmitForm = searchQuery => {
+    setImages([]);
+    setShowLoadMoreBtn(false);
+    setSearchQuery(searchQuery);
+    setPage(1);
   };
 
-  render() {
-    const { images, isLoading, showLoadMoreBtn } = this.state;
-    return (
-      <div className={css.app}>
-        <ToastContainer autoClose={2500} />
-        <Searchbar onSubmit={this.onSubmitForm} />
-        <ImageGallery images={images} />
-        {isLoading && <Loader />}
-        {showLoadMoreBtn && <Button onClick={this.loadMore} />}
-      </div>
-    );
-  }
+  return (
+    <div className={css.app}>
+      <ToastContainer autoClose={2500} />
+      <Searchbar onSubmit={onSubmitForm} />
+      <ImageGallery images={images} />
+      {isLoading && <Loader />}
+      {showLoadMoreBtn && <Button onClick={loadMore} />}
+    </div>
+  );
 }
-
-export default App;
