@@ -8,8 +8,8 @@ import css from './ImageGallery.module.css';
 function reducer(state, action) {
   return {
     showModal: action.type === 'showModal',
-    src: action.src ?? '',
-    alt: action.alt ?? '',
+    src: action.src,
+    alt: action.alt,
   };
 }
 
@@ -19,7 +19,7 @@ export default function ImageGallery({ images }) {
     src: '',
     alt: '',
   });
-
+  console.log(123);
   const showModalPopup = (src, alt) => {
     dispatch({ type: 'showModal', src: src, alt: alt });
   };
