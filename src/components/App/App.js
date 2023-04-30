@@ -21,29 +21,28 @@ export default function App() {
     if (!searchQuery) {
       return;
     }
+    async function handleFindImages() {
+      setIsLoading(true);
+      try {
+        const data = await getImages(searchQuery, page, PAGE_SIZE);
+
+        if (!data.images.length) {
+          toast.info(
+            'Sorry, there are no images matching your search query. Please try again.'
+          );
+          return;
+        }
+        setImages(prevImages => [...prevImages, ...data.images]);
+
+        setShowLoadMoreBtn(page < Math.ceil(data.total / PAGE_SIZE));
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
     handleFindImages();
   }, [searchQuery, page]);
-
-  async function handleFindImages() {
-    setIsLoading(true);
-    try {
-      const data = await getImages(searchQuery, page, PAGE_SIZE);
-
-      if (!data.images.length) {
-        toast.info(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-        return;
-      }
-      setImages(prevImages => [...prevImages, ...data.images]);
-
-      setShowLoadMoreBtn(page < Math.ceil(data.total / PAGE_SIZE));
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
   const loadMore = () => {
     setPage(prevPage => prevPage + 1);
